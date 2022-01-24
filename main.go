@@ -12,6 +12,7 @@ import (
 	"github.com/gohornet/hornet/core/snapshot"
 	"github.com/gohornet/hornet/core/tangle"
 	"github.com/gohornet/hornet/pkg/node"
+	"github.com/gohornet/hornet/plugins/anchor"
 	"github.com/gohornet/hornet/plugins/autopeering"
 	"github.com/gohornet/hornet/plugins/coordinator"
 	"github.com/gohornet/hornet/plugins/dashboard"
@@ -63,6 +64,7 @@ func main() {
 			debug.Plugin,
 			faucet.Plugin,
 			participation.Plugin,
+			anchor.Plugin,
 		}...),
 	)
 }
