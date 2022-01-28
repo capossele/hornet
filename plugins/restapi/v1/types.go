@@ -77,10 +77,10 @@ type messageMetadataResponse struct {
 
 type proofOfInclusionResponse struct {
 	// The hex encoded message ID of the message.
-	MessageID   string            `json:"messageId"`
-	MilestoneID string            `json:"mimlestoneId"`
-	MerkleRoot  string            `json:"merkleRoot"`
-	Path        []jsonmodels.Node `json:"path"`
+	MessageID  string            `json:"messageID"`
+	StampID    string            `json:"stampID"`
+	MerkleRoot string            `json:"merkleRoot"`
+	Path       []jsonmodels.Node `json:"path"`
 }
 
 // messageCreatedResponse defines the response of a POST messages REST API call.

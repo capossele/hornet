@@ -33,10 +33,10 @@ func computeProofOfInclusion(c echo.Context) (*proofOfInclusionResponse, error) 
 	path := tree.MerklePath(target)
 
 	response := &proofOfInclusionResponse{
-		MessageID:   messageID.ToHex(),
-		MilestoneID: milestoneMessageID.ToHex(),
-		MerkleRoot:  hex.EncodeToString(tree.Root()),
-		Path:        jsonmodels.EncodePath(path),
+		MessageID:  messageID.ToHex(),
+		StampID:    milestoneMessageID.ToHex(),
+		MerkleRoot: hex.EncodeToString(tree.Root()),
+		Path:       jsonmodels.EncodePath(path),
 	}
 
 	return response, nil
