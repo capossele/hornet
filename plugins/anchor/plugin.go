@@ -2,6 +2,7 @@ package anchor
 
 import (
 	"context"
+	"encoding/hex"
 
 	"go.uber.org/dig"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/gohornet/hornet/pkg/model/milestone"
 	"github.com/gohornet/hornet/pkg/model/storage"
 	"github.com/gohornet/hornet/pkg/node"
+	"github.com/gohornet/hornet/pkg/proofofinclusion"
 	"github.com/gohornet/hornet/pkg/shutdown"
 	"github.com/gohornet/hornet/pkg/tangle"
 	"github.com/iotaledger/goshimmer/client"
@@ -45,25 +47,49 @@ type dependencies struct {
 func run() {
 	c = client.NewGoShimmerAPI("http://127.0.0.1:8070")
 
-	onLatestMilestoneIndexChanged := events.NewClosure(func(msIndex milestone.Index) {
+	onConfirmedMilestoneChanged := events.NewClosure(func(cachedMs *storage.CachedMilestone) {
+		messagesMemcache := storage.NewMessagesMemcache(deps.Storage)
+		metadataMemcache := storage.NewMetadataMemcache(deps.Storage)
+		defer func() {
+			messagesMemcache.Cleanup(true)
+			metadataMemcache.Cleanup(true)
+			cachedMs.Release()
+		}()
+
+		msIndex := cachedMs.Milestone().Index
 		if milestoneMessageID := getMilestoneMessageID(msIndex); milestoneMessageID != nil {
-			// hub.BroadcastMsg(&Msg{Type: MsgTypeMs, Data: &LivefeedMilestone{MessageID: milestoneMessageID.ToHex(), Index: msIndex}})
+			cachedMsgMeta := deps.Storage.CachedMessageMetadataOrNil(milestoneMessageID)
+			if cachedMsgMeta == nil {
+				Plugin.LogError("error retrieving cachedMsgMetadata for milestone")
+				return
+			}
+			defer cachedMsgMeta.Release(true)
+			parents := cachedMsgMeta.Metadata().Parents()
+
+			ipc, err := proofofinclusion.ComputeIncludedPastCone(context.Background(), deps.Storage, msIndex, metadataMemcache, messagesMemcache, parents)
+			if err != nil {
+				Plugin.LogErrorf("error computing included past cone %s", err)
+				return
+			}
+
+			Plugin.LogInfo("Merkle Root -> ", hex.EncodeToString(ipc.MerkleTree.Root()))
+
 			anchorMsg := &jsonmodels.ChatRequest{
 				From:    "Chrysalis-Tangle",
 				To:      "Devnet-Tangle",
 				Message: milestoneMessageID.ToHex(),
 			}
 			if err := c.SendChatMessage(anchorMsg); err != nil {
-				Plugin.LogErrorf("Error issuing anchor %s", err)
+				Plugin.LogErrorf("error issuing anchor %s", err)
 			}
 		}
 	})
 
 	if err := Plugin.Daemon().BackgroundWorker("Anchor", func(ctx context.Context) {
-		deps.Tangle.Events.LatestMilestoneIndexChanged.Attach(onLatestMilestoneIndexChanged)
+		deps.Tangle.Events.ConfirmedMilestoneChanged.Attach(onConfirmedMilestoneChanged)
 		<-ctx.Done()
 		Plugin.LogInfo("Stopping Anchoring ...")
-		deps.Tangle.Events.LatestMilestoneIndexChanged.Detach(onLatestMilestoneIndexChanged)
+		deps.Tangle.Events.ConfirmedMilestoneChanged.Detach(onConfirmedMilestoneChanged)
 		Plugin.LogInfo("Stopping Anchoring ... done")
 	}, shutdown.PriorityDashboard); err != nil {
 		Plugin.LogPanicf("failed to start worker: %s", err)
