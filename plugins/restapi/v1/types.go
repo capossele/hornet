@@ -7,6 +7,7 @@ import (
 	"github.com/gohornet/hornet/pkg/model/storage"
 	"github.com/gohornet/hornet/pkg/model/utxo"
 	"github.com/gohornet/hornet/pkg/protocol/gossip"
+	"github.com/iotaledger/goshimmer/packages/jsonmodels"
 )
 
 // infoResponse defines the response of a GET info REST API call.
@@ -76,10 +77,10 @@ type messageMetadataResponse struct {
 
 type proofOfInclusionResponse struct {
 	// The hex encoded message ID of the message.
-	MessageID   string   `json:"messageId"`
-	MilestoneID string   `json:"mimlestoneId"`
-	MerkleRoot  string   `json:"merkleRoot"`
-	Path        []string `json:"path"`
+	MessageID   string            `json:"messageId"`
+	MilestoneID string            `json:"mimlestoneId"`
+	MerkleRoot  string            `json:"merkleRoot"`
+	Path        []jsonmodels.Node `json:"path"`
 }
 
 // messageCreatedResponse defines the response of a POST messages REST API call.

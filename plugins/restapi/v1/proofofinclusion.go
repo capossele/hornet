@@ -3,9 +3,9 @@ package v1
 import (
 	"encoding/hex"
 
-	"github.com/gohornet/hornet/pkg/proofofinclusion"
 	"github.com/gohornet/hornet/pkg/restapi"
 	"github.com/gohornet/hornet/plugins/anchor"
+	"github.com/iotaledger/goshimmer/packages/jsonmodels"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/wilfreddenton/merkle"
@@ -36,7 +36,7 @@ func computeProofOfInclusion(c echo.Context) (*proofOfInclusionResponse, error) 
 		MessageID:   messageID.ToHex(),
 		MilestoneID: milestoneMessageID.ToHex(),
 		MerkleRoot:  hex.EncodeToString(tree.Root()),
-		Path:        proofofinclusion.PathToStrings(path),
+		Path:        jsonmodels.EncodePath(path),
 	}
 
 	return response, nil
