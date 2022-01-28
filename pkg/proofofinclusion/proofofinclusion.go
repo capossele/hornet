@@ -2,6 +2,7 @@ package proofofinclusion
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/gohornet/hornet/pkg/common"
@@ -93,4 +94,12 @@ func ComputeIncludedPastCone(ctx context.Context, dbStorage *storage.Storage, ms
 	ipc.MerkleTree = t
 
 	return ipc, nil
+}
+
+func PathToStrings(path []*merkle.Node) []string {
+	output := make([]string, len(path))
+	for i, p := range path {
+		output[i] = hex.EncodeToString(p.Hash)
+	}
+	return output
 }

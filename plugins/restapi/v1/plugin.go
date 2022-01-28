@@ -121,6 +121,8 @@ const (
 	// RouteControlSnapshotsCreate is the control route to manually create a snapshot files.
 	// POST creates a snapshot (full, delta or both).
 	RouteControlSnapshotsCreate = "/control/snapshots/create"
+
+	RouteProofOfInclusion = "/proofofinclusion/:" + restapipkg.ParameterMessageID
 )
 
 func init() {
@@ -209,6 +211,14 @@ func configure() {
 			return restapipkg.JSONResponse(c, http.StatusOK, resp)
 		})
 	}
+
+	routeGroup.GET(RouteProofOfInclusion, func(c echo.Context) error {
+		resp, err := computeProofOfInclusion(c)
+		if err != nil {
+			return err
+		}
+		return restapipkg.JSONResponse(c, http.StatusOK, resp)
+	})
 
 	routeGroup.GET(RouteMessageMetadata, func(c echo.Context) error {
 		resp, err := messageMetadataByID(c)

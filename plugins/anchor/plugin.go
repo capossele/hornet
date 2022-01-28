@@ -17,6 +17,9 @@ import (
 	"github.com/iotaledger/goshimmer/packages/jsonmodels"
 	"github.com/iotaledger/hive.go/configuration"
 	"github.com/iotaledger/hive.go/events"
+	"github.com/labstack/echo"
+	"github.com/pkg/errors"
+	"github.com/wilfreddenton/merkle"
 )
 
 func init() {
@@ -104,4 +107,43 @@ func getMilestoneMessageID(index milestone.Index) hornet.MessageID {
 	defer cachedMs.Release(true) // message -1
 
 	return cachedMs.Message().MessageID()
+}
+
+func ProofOfInclusion(messageID hornet.MessageID) (*merkle.Tree, hornet.MessageID, error) {
+	messagesMemcache := storage.NewMessagesMemcache(deps.Storage)
+	metadataMemcache := storage.NewMetadataMemcache(deps.Storage)
+	defer func() {
+		messagesMemcache.Cleanup(true)
+		metadataMemcache.Cleanup(true)
+	}()
+
+	cachedMsgMeta := deps.Storage.CachedMessageMetadataOrNil(messageID)
+	if cachedMsgMeta == nil {
+		return nil, nil, errors.WithMessagef(echo.ErrNotFound, "message not found: %s", messageID.ToHex())
+	}
+	defer cachedMsgMeta.Release(true)
+
+	metadata := cachedMsgMeta.Metadata()
+
+	referenced, msIndex := metadata.ReferencedWithIndex()
+	if !referenced {
+		return nil, nil, errors.WithMessagef(echo.ErrNotFound, "message not confirmed: %s", messageID.ToHex())
+	}
+
+	if milestoneMessageID := getMilestoneMessageID(msIndex); milestoneMessageID != nil {
+		cachedMsgMeta := deps.Storage.CachedMessageMetadataOrNil(milestoneMessageID)
+		if cachedMsgMeta == nil {
+			return nil, nil, errors.WithMessagef(echo.ErrNotFound, "milestone not found for message: %s", messageID.ToHex())
+		}
+		defer cachedMsgMeta.Release(true)
+		parents := cachedMsgMeta.Metadata().Parents()
+
+		ipc, err := proofofinclusion.ComputeIncludedPastCone(context.Background(), deps.Storage, msIndex, metadataMemcache, messagesMemcache, parents)
+		if err != nil {
+			return nil, nil, errors.WithMessagef(echo.ErrNotFound, "error computing included past cone: %s", err)
+		}
+
+		return ipc.MerkleTree, milestoneMessageID, nil
+	}
+	return nil, nil, errors.WithMessagef(echo.ErrNotFound, "milestone not found for message: %s", messageID.ToHex())
 }

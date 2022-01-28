@@ -74,6 +74,14 @@ type messageMetadataResponse struct {
 	ShouldReattach *bool `json:"shouldReattach,omitempty"`
 }
 
+type proofOfInclusionResponse struct {
+	// The hex encoded message ID of the message.
+	MessageID   string   `json:"messageId"`
+	MilestoneID string   `json:"mimlestoneId"`
+	MerkleRoot  string   `json:"merkleRoot"`
+	Path        []string `json:"path"`
+}
+
 // messageCreatedResponse defines the response of a POST messages REST API call.
 type messageCreatedResponse struct {
 	// The hex encoded message ID of the message.
