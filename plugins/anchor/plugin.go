@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 
 	"go.uber.org/dig"
+	"golang.org/x/crypto/blake2b"
 
 	"github.com/gohornet/hornet/pkg/model/hornet"
 	"github.com/gohornet/hornet/pkg/model/milestone"
@@ -31,12 +32,17 @@ func init() {
 			Run:      run,
 		},
 	}
+
+	h, _ := blake2b.New256(nil)
+	h.Write([]byte("Mainnet"))
+	ChildTangleID = hex.EncodeToString(h.Sum(nil))
 }
 
 var (
-	Plugin *node.Plugin
-	deps   dependencies
-	c      *client.GoShimmerAPI
+	Plugin        *node.Plugin
+	deps          dependencies
+	c             *client.GoShimmerAPI
+	ChildTangleID string
 )
 
 type dependencies struct {
@@ -77,12 +83,14 @@ func run() {
 
 			Plugin.LogInfo("Merkle Root -> ", hex.EncodeToString(ipc.MerkleTree.Root()))
 
-			anchorMsg := &jsonmodels.ChatRequest{
-				From:    "Chrysalis-Tangle",
-				To:      "Devnet-Tangle",
-				Message: milestoneMessageID.ToHex(),
+			anchorMsg := &jsonmodels.Anchor{
+				Version:        1,
+				ChildTangleID:  ChildTangleID,
+				LastStampID:    ChildTangleID,
+				ChildMessageID: milestoneMessageID.ToHex(),
+				MerkleRoot:     hex.EncodeToString(ipc.MerkleTree.Root()),
 			}
-			if err := c.SendChatMessage(anchorMsg); err != nil {
+			if err := c.IssueAnchor(anchorMsg); err != nil {
 				Plugin.LogErrorf("error issuing anchor %s", err)
 			}
 		}
