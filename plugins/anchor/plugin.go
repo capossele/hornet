@@ -29,13 +29,10 @@ func init() {
 		Pluggable: node.Pluggable{
 			Name:     "Anchor",
 			DepsFunc: func(cDeps dependencies) { deps = cDeps },
+			Params:   params,
 			Run:      run,
 		},
 	}
-
-	h, _ := blake2b.New256(nil)
-	h.Write([]byte("Mainnet"))
-	ChildTangleID = hex.EncodeToString(h.Sum(nil))
 }
 
 var (
@@ -54,7 +51,10 @@ type dependencies struct {
 }
 
 func run() {
-	c = client.NewGoShimmerAPI("http://127.0.0.1:8070")
+	c = client.NewGoShimmerAPI(deps.NodeConfig.String(CfgAnchorParentAPI))
+	h, _ := blake2b.New256(nil)
+	h.Write([]byte(deps.NodeConfig.String(CfgAnchorChildID)))
+	ChildTangleID = hex.EncodeToString(h.Sum(nil))
 
 	onConfirmedMilestoneChanged := events.NewClosure(func(cachedMs *storage.CachedMilestone) {
 		messagesMemcache := storage.NewMessagesMemcache(deps.Storage)
