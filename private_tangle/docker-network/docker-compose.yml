@@ -264,6 +264,15 @@ services:
       - hornet
     depends_on:
       - goshimmer_root
+  ethereum:
+    image: ethereum-ebsi
+    stop_grace_period: 1m
+    command: >
+      --goshimmerClient="http://goshimmer_root:9080"
+    networks:
+      - hornet
+    depends_on:
+      - goshimmer_root
 # Create our own network
 networks:
   hornet:

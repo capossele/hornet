@@ -9,3 +9,4 @@ scrape_configs:
           - hornet_child3:9311
           - hornet_child4:9311
           - hornet_child5:9311
+          - ethereum:9311
