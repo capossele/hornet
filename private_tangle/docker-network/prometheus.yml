@@ -3,6 +3,9 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets:
-          - peer_master:9311
-          - faucet:9311
-          - peer_master2:9311
+          - goshimmer_root:9311
+          - hornet_child1:9311
+          - hornet_child2:9311
+          - hornet_child3:9311
+          - hornet_child4:9311
+          - hornet_child5:9311

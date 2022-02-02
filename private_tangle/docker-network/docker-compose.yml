@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  goshimmer_master:
+  goshimmer_root:
     image: goshimmer-ebsi
     stop_grace_period: 1m
     command: >
@@ -41,7 +41,35 @@ services:
       - 1888/tcp # analysis server
     networks:
       - hornet
-  peer_master:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/run/secrets/prometheus.yml
+    secrets:
+      - prometheus.yml
+    networks:
+      - hornet
+    depends_on:
+      - goshimmer_root
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      # path to provisioning definitions can only be defined as
+      # environment variables for grafana within docker
+      - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
+    networks:
+      - hornet
+    ports:
+      - "3000:3000"
+    user: "104"
+    volumes:
+      - grafana-data-volume:/var/lib/grafana
+      - ./grafana/provisioning:/var/lib/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+  hornet_child1:
     image: hornet-ebsi
     stop_grace_period: 1m
     environment:
@@ -61,11 +89,11 @@ services:
       --snapshots.deltaPath="/tmp/snapshots/private_tangle1/delta_snapshot.bin"
       --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
       --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="localhost:9311"
-      --prometheus.fileServiceDiscovery.target="localhost:9311"
+      --prometheus.bindAddress="0.0.0.0:9311"
+      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
       --mqtt.bindAddress="localhost:1883"
       --anchor.childID="mainnet1"
-      --anchor.parentAPI="http://goshimmer_master:9080"
+      --anchor.parentAPI="http://goshimmer_root:9080"
       --p2p.db.path="p2pstore"
       --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
       --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
@@ -78,7 +106,9 @@ services:
       - "14165:14265/tcp" # REST-API
     networks:
       - hornet
-  peer_master2:
+    depends_on:
+      - goshimmer_root
+  hornet_child2:
     image: hornet-ebsi
     stop_grace_period: 1m
     environment:
@@ -98,11 +128,11 @@ services:
       --snapshots.deltaPath="/tmp/snapshots/private_tangle2/delta_snapshot.bin"
       --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
       --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="localhost:9311"
-      --prometheus.fileServiceDiscovery.target="localhost:9311"
+      --prometheus.bindAddress="0.0.0.0:9311"
+      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
       --mqtt.bindAddress="localhost:1883"
       --anchor.childID="mainnet2"
-      --anchor.parentAPI="http://goshimmer_master:9080"
+      --anchor.parentAPI="http://goshimmer_root:9080"
       --p2p.db.path="p2pstore"
       --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
       --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
@@ -115,7 +145,9 @@ services:
       - "14265:14265/tcp" # REST-API
     networks:
       - hornet
-  peer_master3:
+    depends_on:
+      - goshimmer_root
+  hornet_child3:
     image: hornet-ebsi
     stop_grace_period: 1m
     environment:
@@ -135,11 +167,11 @@ services:
       --snapshots.deltaPath="/tmp/snapshots/private_tangle3/delta_snapshot.bin"
       --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
       --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="localhost:9311"
-      --prometheus.fileServiceDiscovery.target="localhost:9311"
+      --prometheus.bindAddress="0.0.0.0:9311"
+      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
       --mqtt.bindAddress="localhost:1883"
       --anchor.childID="mainnet3"
-      --anchor.parentAPI="http://goshimmer_master:9080"
+      --anchor.parentAPI="http://goshimmer_root:9080"
       --p2p.db.path="p2pstore"
       --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
       --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
@@ -152,7 +184,9 @@ services:
       - "14365:14265/tcp" # REST-API
     networks:
       - hornet
-  peer_master4:
+    depends_on:
+      - goshimmer_root
+  hornet_child4:
     image: hornet-ebsi
     stop_grace_period: 1m
     environment:
@@ -172,11 +206,11 @@ services:
       --snapshots.deltaPath="/tmp/snapshots/private_tangle4/delta_snapshot.bin"
       --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
       --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="localhost:9311"
-      --prometheus.fileServiceDiscovery.target="localhost:9311"
+      --prometheus.bindAddress="0.0.0.0:9311"
+      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
       --mqtt.bindAddress="localhost:1883"
       --anchor.childID="mainnet4"
-      --anchor.parentAPI="http://goshimmer_master:9080"
+      --anchor.parentAPI="http://goshimmer_root:9080"
       --p2p.db.path="p2pstore"
       --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
       --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
@@ -189,7 +223,9 @@ services:
       - "14465:14265/tcp" # REST-API
     networks:
       - hornet
-  peer_master5:
+    depends_on:
+      - goshimmer_root
+  hornet_child5:
     image: hornet-ebsi
     stop_grace_period: 1m
     environment:
@@ -209,11 +245,11 @@ services:
       --snapshots.deltaPath="/tmp/snapshots/private_tangle5/delta_snapshot.bin"
       --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
       --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="localhost:9311"
-      --prometheus.fileServiceDiscovery.target="localhost:9311"
+      --prometheus.bindAddress="0.0.0.0:9311"
+      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
       --mqtt.bindAddress="localhost:1883"
       --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_master:9080"
+      --anchor.parentAPI="http://goshimmer_root:9080"
       --p2p.db.path="p2pstore"
       --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
       --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
@@ -226,24 +262,8 @@ services:
       - "14565:14265/tcp" # REST-API
     networks:
       - hornet
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   restart: unless-stopped
-  #   profiles:
-  #     - grafana
-  #   environment:
-  #     # path to provisioning definitions can only be defined as
-  #     # environment variables for grafana within docker
-  #     - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
-  #   networks:
-  #     - hornet
-  #   ports:
-  #     - "3000:3000"
-  #   user: "104"
-  #   volumes:
-  #     - grafana-data-volume:/var/lib/grafana
-  #     - ./grafana/provisioning:/var/lib/grafana/provisioning:ro
-  #     - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - goshimmer_root
 # Create our own network
 networks:
   hornet:
@@ -253,13 +273,13 @@ networks:
 volumes:
   shimmerdb:
   peerdb:
-  # grafana-data-volume:
+  grafana-data-volume:
 # read only files to load in the containers that may be shared across containers
 secrets:
   hornet.config.json:
     file: ${HORNET_CONFIG:-./config_private_tangle.json}
   goshimmer.message.snapshot.bin:
-    file: ${SNAPSHOT_FILE:-./7R1itJx5hVuo9w9hjg5cwKFmek4HMSoBDgJZN8hKGxih.bin}
+    file: ${SNAPSHOT_FILE:-./goshimmer_snapshot.bin}
   goshimmer.config.json:
     file: ${GOSHIMMER_CONFIG:-./config.docker.json}
   prometheus.yml:
