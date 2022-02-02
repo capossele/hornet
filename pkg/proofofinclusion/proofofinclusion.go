@@ -3,9 +3,7 @@ package proofofinclusion
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 
-	"github.com/gohornet/hornet/pkg/common"
 	"github.com/gohornet/hornet/pkg/dag"
 	"github.com/gohornet/hornet/pkg/model/hornet"
 	"github.com/gohornet/hornet/pkg/model/milestone"
@@ -42,11 +40,6 @@ func ComputeIncludedPastCone(ctx context.Context, dbStorage *storage.Storage, ms
 	// consumer
 	consumer := func(cachedMetadata *storage.CachedMetadata) error { // meta +1
 		defer cachedMetadata.Release(true) // meta -1
-		// load up message
-		cachedMessage := messagesMemcache.CachedMessageOrNil(cachedMetadata.Metadata().MessageID())
-		if cachedMessage == nil {
-			return fmt.Errorf("%w: message %s of candidate msg %s doesn't exist", common.ErrMessageNotFound, cachedMetadata.Metadata().MessageID().ToHex(), cachedMetadata.Metadata().MessageID().ToHex())
-		}
 		ipc.MessagesIncluded = append(ipc.MessagesIncluded, cachedMetadata.Metadata().MessageID())
 		return nil
 	}
