@@ -15,4 +15,15 @@ scrape_configs:
           - hornet_child9:9311
           - hornet_child10:9311
           - hornet_child11:9311
+          - hornet_child12:9311
+          - hornet_child13:9311
+          - hornet_child14:9311
+          - hornet_child15:9311
+          - hornet_child16:9311
+          - hornet_child17:9311
+          - hornet_child18:9311
+          - hornet_child19:9311
+          - hornet_child20:9311
+          - hornet_child21:9311
+          - hornet_child22:9311
           - ethereum:9311
