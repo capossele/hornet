@@ -9,4 +9,15 @@ scrape_configs:
           - hornet_child3:9311
           - hornet_child4:9311
           - hornet_child5:9311
+          - ressims.iota.cafe:9301
+          - ressims.iota.cafe:9302
+          - ressims.iota.cafe:9303
+          - ressims.iota.cafe:9304
+          - ressims.iota.cafe:9305
+          - ressims.iota.cafe:9306
+          - ressims.iota.cafe:9307
+          - ressims.iota.cafe:9308
+          - ressims.iota.cafe:9309
+          - ressims.iota.cafe:9310
+          - ressims.iota.cafe:9311
           - ethereum:9311
