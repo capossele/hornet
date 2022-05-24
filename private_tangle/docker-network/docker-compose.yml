@@ -531,7 +531,7 @@ services:
     volumes:
     - ./snapshots:/tmp/snapshots
     ports:
-      - "80121:8081/tcp" # dashboard
+      - "8121:8081/tcp" # dashboard
       - "14375:14265/tcp" # REST-API
     networks:
       - hornet
