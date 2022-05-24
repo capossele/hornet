@@ -41,34 +41,6 @@ services:
       - 1888/tcp # analysis server
     networks:
       - hornet
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    command:
-      - --config.file=/run/secrets/prometheus.yml
-    secrets:
-      - prometheus.yml
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  grafana:
-    image: grafana/grafana:latest
-    restart: unless-stopped
-    environment:
-      # path to provisioning definitions can only be defined as
-      # environment variables for grafana within docker
-      - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
-    networks:
-      - hornet
-    ports:
-      - "3000:3000"
-    user: "104"
-    volumes:
-      - grafana-data-volume:/var/lib/grafana
-      - ./grafana/provisioning:/var/lib/grafana/provisioning:ro
-      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
   hornet_child1:
     image: hornet-ebsi
     stop_grace_period: 1m
@@ -104,6 +76,7 @@ services:
     ports:
       - "8011:8081/tcp" # dashboard
       - "14165:14265/tcp" # REST-API
+      - "9301:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -143,6 +116,7 @@ services:
     ports:
       - "8021:8081/tcp" # dashboard
       - "14265:14265/tcp" # REST-API
+      - "9302:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -182,6 +156,7 @@ services:
     ports:
       - "8031:8081/tcp" # dashboard
       - "14365:14265/tcp" # REST-API
+      - "9303:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -221,6 +196,7 @@ services:
     ports:
       - "8041:8081/tcp" # dashboard
       - "14465:14265/tcp" # REST-API
+      - "9304:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -260,6 +236,7 @@ services:
     ports:
       - "8051:8081/tcp" # dashboard
       - "14565:14265/tcp" # REST-API
+      - "9305:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -299,6 +276,7 @@ services:
     ports:
       - "8061:8081/tcp" # dashboard
       - "14665:14265/tcp" # REST-API
+      - "9306:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -338,6 +316,7 @@ services:
     ports:
       - "8071:8081/tcp" # dashboard
       - "14765:14265/tcp" # REST-API
+      - "9307:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -377,6 +356,7 @@ services:
     ports:
       - "8081:8081/tcp" # dashboard
       - "14865:14265/tcp" # REST-API
+      - "9308:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -416,6 +396,7 @@ services:
     ports:
       - "8091:8081/tcp" # dashboard
       - "14965:14265/tcp" # REST-API
+      - "9309:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -455,6 +436,7 @@ services:
     ports:
       - "8012:8081/tcp" # dashboard
       - "14175:14265/tcp" # REST-API
+      - "9310:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
@@ -494,435 +476,7 @@ services:
     ports:
       - "8022:8081/tcp" # dashboard
       - "14275:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child12:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle12/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle12/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet1"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8121:8081/tcp" # dashboard
-      - "14375:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child13:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle13/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle13/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet2"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8131:8081/tcp" # dashboard
-      - "15365:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child14:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle14/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle14/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet3"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8141:8081/tcp" # dashboard
-      - "15465:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child15:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle15/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle15/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet4"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8151:8081/tcp" # dashboard
-      - "15565:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child16:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle16/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle16/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8161:8081/tcp" # dashboard
-      - "15665:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child17:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle17/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle17/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8171:8081/tcp" # dashboard
-      - "15765:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child18:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle18/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle18/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8181:8081/tcp" # dashboard
-      - "15865:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child19:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle19/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle19/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8191:8081/tcp" # dashboard
-      - "15965:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child20:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle20/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle20/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8201:8081/tcp" # dashboard
-      - "16065:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child21:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle21/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle21/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8212:8081/tcp" # dashboard
-      - "16175:14265/tcp" # REST-API
-    networks:
-      - hornet
-    depends_on:
-      - goshimmer_root
-  hornet_child22:
-    image: hornet-ebsi
-    stop_grace_period: 1m
-    environment:
-      - COO_PRV_KEYS=651941eddb3e68cb1f6ef4ef5b04625dcf5c70de1fdc4b1c9eadb2c219c074e0ed3c3f1a319ff4e909cf2771d79fece0ac9bd9fd2ee49ea6c0885c9cb3b1248c,0e324c6ff069f31890d496e9004636fd73d8e8b5bea08ec58a4178ca85462325f6752f5f46a53364e2ee9c4d662d762a81efd51010282a75cd6bd03f28ef349c
-      - FAUCET_PRV_KEY=52d23081a626b1eca34b63f1eaeeafcbd66bf545635befc12cd0f19926efefb031f176dadf38cdec0eadd1d571394be78f0bbee3ed594316678dffc162a095cb
-    command: >
-      --config=/run/secrets/hornet.config.json
-      --cooBootstrap
-      --cooStartIndex=0
-      --protocol.networkID="private_tangle1"
-      --restAPI.bindAddress="0.0.0.0:14265"
-      --dashboard.bindAddress="0.0.0.0:8081"
-      --db.path="privatedb"
-      --node.disablePlugins="Autopeering"
-      --node.enablePlugins="Spammer,Coordinator,MQTT,Debug,Prometheus,Faucet,Anchor"
-      --snapshots.fullPath=/tmp/snapshots/private_tangle22/full_snapshot.bin
-      --snapshots.deltaPath="/tmp/snapshots/private_tangle22/delta_snapshot.bin"
-      --p2p.bindMultiAddresses="/ip4/127.0.0.1/tcp/15600"
-      --profiling.bindAddress="127.0.0.1:6060"
-      --prometheus.bindAddress="0.0.0.0:9311"
-      --prometheus.fileServiceDiscovery.target="0.0.0.0:9311"
-      --mqtt.bindAddress="localhost:1883"
-      --anchor.childID="mainnet5"
-      --anchor.parentAPI="http://goshimmer_root:9080"
-      --p2p.db.path="p2pstore"
-      --p2p.identityPrivateKey="1f46fad4f538a031d4f87f490f6bca4319dfd0307636a5759a22b5e8874bd608f9156ba976a12918c16a481c38c88a7b5351b769adc30390e93b6c0a63b09b79"
-      --p2p.peers="/ip4/127.0.0.1/tcp/15601/p2p/12D3KooWCKwcTWevoRKa2kEBputeGASvEBuDfRDSbe8t1DWugUmL,/ip4/127.0.0.1/tcp/15602/p2p/12D3KooWGdr8M5KX8KuKaXSiKfHJstdVnRkadYmupF7tFk2HrRoA,/ip4/127.0.0.1/tcp/15603/p2p/12D3KooWC7uE9w3RN4Vh1FJAZa8SbE8yMWR6wCVBajcWpyWguV73"
-    secrets:
-      - hornet.config.json
-    volumes:
-    - ./snapshots:/tmp/snapshots
-    ports:
-      - "8222:8081/tcp" # dashboard
-      - "16275:14265/tcp" # REST-API
+      - "9311:9311/tcp" # Prometheus
     networks:
       - hornet
     depends_on:
