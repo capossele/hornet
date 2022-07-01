@@ -41,6 +41,46 @@ services:
       - 1888/tcp # analysis server
     networks:
       - hornet
+  goshimmer2-child:
+    image: goshimmer2-ebsi
+    stop_grace_period: 1m
+    command: >
+      --analysis.dashboard.bindAddress=0.0.0.0:9000
+      --analysis.dashboard.dev=false
+      --analysis.server.bindAddress=0.0.0.0:1888
+      --autoPeering.entryNodes=
+      --node.seed=base58:8q491c3YWjbPwLmF2WD95YmCgh61j2kenCKHfGfByoWi
+      --node.overwriteStoredSeed=true
+      --config=/run/secrets/goshimmer2.config.json
+      --database.directory=/app/mainnetdb
+      --node.peerDBDirectory=/app/peerdb
+      --mana.enableResearchVectors=false
+      --messageLayer.snapshot.file=/run/secrets/goshimmer2.message.snapshot.bin
+      --messageLayer.snapshot.genesisNode=
+      --messageLayer.startSynced=true
+      --metrics.global=true
+      --metrics.local=true
+      --metrics.manaResearch=false
+      --node.disablePlugins=portcheck,clock,Firewall,ManaInitializer
+      --node.enablePlugins=analysisServer,analysisDashboard,prometheus,spammer,WebAPIToolsMessageEndpoint,activity,snapshot
+      --prometheus.bindAddress=0.0.0.0:9311
+      --prometheus.processMetrics=false
+      --messageLayer.startSynced=true
+      --notarization.anchorEnabled=true
+      --notarization.anchorParentAPI="http://goshimmer_root:9080"
+    secrets:
+      - goshimmer2.config.json
+      - goshimmer2.message.snapshot.bin
+    volumes:
+      - goshimmer2db:/app/mainnetdb
+      - peerdb2:/app/peerdb
+    ports:
+      - "8080:8080/tcp" # web API
+      - "8081:8081/tcp" # dashboard
+    networks:
+      - hornet
+    depends_on:
+      - goshimmer_root
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -282,6 +322,8 @@ networks:
 volumes:
   shimmerdb:
   peerdb:
+  goshimmer2db:
+  peerdb2:
   grafana-data-volume:
 # read only files to load in the containers that may be shared across containers
 secrets:
@@ -291,5 +333,9 @@ secrets:
     file: ${SNAPSHOT_FILE:-./goshimmer_snapshot.bin}
   goshimmer.config.json:
     file: ${GOSHIMMER_CONFIG:-./config.docker.json}
+  goshimmer2.message.snapshot.bin:
+    file: ${SNAPSHOT_FILE:-./goshimmer2_snapshot.bin}
+  goshimmer2.config.json:
+    file: ${GOSHIMMER_CONFIG:-./config.goshimmer2.docker.json}
   prometheus.yml:
     file: ${PROMETHEUS_CONFIG:-./prometheus.yml}
